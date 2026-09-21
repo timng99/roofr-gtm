@@ -348,6 +348,11 @@ render();
 // change — re-render once the shared toggle (in nav.js) flips the theme.
 document.addEventListener('roofr-theme-changed', render);
 </script>
+<script>
+  // This page's own header (with the Segment filter) sits close to the top,
+  // so give the floating nav pills more clearance than the default 16px.
+  window.NAV_TOP_OFFSET = 80;
+</script>
 <script src="pages.js"></script>
 <script src="nav.js"></script>
 </body>

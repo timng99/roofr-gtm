@@ -1,17 +1,23 @@
 // Shared site header. Drop these two tags near the end of <body> on any page:
 //   <script src="pages.js"></script>
 //   <script src="nav.js"></script>
-// Renders two small floating pills — logo + "Overview" on the left,
-// page switcher + light/dark toggle on the right — and keeps the theme
-// choice in one shared localStorage key so it carries across pages.
+// Renders two small floating pills — logo + "Home" on the left, a page
+// switcher + light/dark toggle on the right — and keeps the theme choice in
+// one shared localStorage key so it carries across pages.
 //
-// NOTE: signal-check.html has its own inline logo + toggle already, so it
-// does NOT include this file — its nav bits are wired by hand instead.
+// The switcher always lists Home plus every page in pages.js, with whichever
+// one you're currently on pre-selected, so the closed dropdown itself shows
+// "you are here" rather than a generic placeholder.
+//
+// If a page has its own fixed/sticky header that the pills would sit on top
+// of, set window.NAV_TOP_OFFSET (in px) to a value that clears it, in an
+// inline <script> BEFORE this file loads. Defaults to 16.
 (function () {
   var THEME_KEY = 'roofrCaseTheme';
   var pages = window.SITE_PAGES || [];
   var current = location.pathname.split('/').pop() || 'index.html';
   var isHome = current === '' || current === 'index.html';
+  var topOffset = (typeof window.NAV_TOP_OFFSET === 'number') ? window.NAV_TOP_OFFSET : 16;
 
   function isDarkNow() {
     var attr = document.documentElement.getAttribute('data-theme');
@@ -72,34 +78,31 @@
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
 
-  // ---- left pill: logo + overview ----
+  // ---- left pill: logo + Home ----
   var left = document.createElement('div');
   left.className = 'rc-pill rc-pill-left';
-  left.innerHTML = LOGO + (isHome ? '' : '<a href="index.html">← Overview</a>');
+  left.style.top = topOffset + 'px';
+  left.innerHTML = LOGO + (isHome ? '' : '<a href="index.html">← Home</a>');
   document.body.appendChild(left);
 
-  // ---- right pill: page switcher + theme toggle ----
+  // ---- right pill: page switcher (Home + every page, current preselected) + theme toggle ----
   var right = document.createElement('div');
   right.className = 'rc-pill rc-pill-right';
+  right.style.top = topOffset + 'px';
 
-  var others = pages.filter(function (p) { return p.href !== current; });
-  if (others.length > 0) {
+  var allOptions = [{ title: 'Home', href: 'index.html' }].concat(pages);
+  if (allOptions.length > 1) {
     var select = document.createElement('select');
     select.setAttribute('aria-label', 'Jump to another page');
-    var placeholder = document.createElement('option');
-    placeholder.textContent = isHome ? 'Jump to a page' : 'Other pages';
-    placeholder.value = '';
-    placeholder.selected = true;
-    placeholder.disabled = true;
-    select.appendChild(placeholder);
-    others.forEach(function (p) {
+    allOptions.forEach(function (p) {
       var opt = document.createElement('option');
       opt.value = p.href;
       opt.textContent = p.title;
+      if (p.href === current) opt.selected = true;
       select.appendChild(opt);
     });
     select.addEventListener('change', function () {
-      if (select.value) location.href = select.value;
+      if (select.value && select.value !== current) location.href = select.value;
     });
     right.appendChild(select);
   }
