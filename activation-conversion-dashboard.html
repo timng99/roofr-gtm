@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full vs Partial Activation → Trial-to-Paid Conversion</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+:root {
+  --bg-primary: #f4f5f7;
+  --bg-card: #ffffff;
+  --bg-header: #1a1a2e;
+  --text-primary: #1c1e21;
+  --text-secondary: #6c757d;
+  --text-on-dark: #ffffff;
+  --border: #e9ecef;
+  --color-full: #2f6fed;
+  --color-partial: #c9ccd1;
+  --positive: #1e8e5a;
+  --negative: #d64545;
+  --gap: 16px;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #14161c;
+    --bg-card: #1e2129;
+    --bg-header: #0d0f14;
+    --text-primary: #f0f1f3;
+    --text-secondary: #a3a8b3;
+    --border: #2c303a;
+    --color-partial: #464b57;
+  }
+}
+:root[data-theme="dark"] {
+  --bg-primary: #14161c;
+  --bg-card: #1e2129;
+  --bg-header: #0d0f14;
+  --text-primary: #f0f1f3;
+  --text-secondary: #a3a8b3;
+  --border: #2c303a;
+  --color-partial: #464b57;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.header {
+  background: var(--bg-header);
+  color: var(--text-on-dark);
+  padding: 22px 26px;
+  border-radius: var(--radius);
+  margin-bottom: var(--gap);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.header h1 { font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+.header p { font-size: 13px; color: rgba(255,255,255,0.7); }
+.filter-group { display: flex; align-items: center; gap: 8px; }
+.filter-group label { font-size: 12px; color: rgba(255,255,255,0.75); }
+.filter-group select {
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text-on-dark);
+  font-size: 13px;
+}
+.filter-group select option { background: var(--bg-header); color: var(--text-on-dark); }
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.kpi-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.kpi-value { font-size: 26px; font-weight: 700; }
+.kpi-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: var(--gap);
+}
+.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.chart-card .note { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+.chart-wrap { position: relative; height: 340px; }
+.table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  overflow-x: auto;
+  margin-bottom: var(--gap);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+th { text-align: left; padding: 9px 10px; border-bottom: 2px solid var(--border); color: var(--text-secondary); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+tr.all-row td { font-weight: 700; }
+.rate-pill { font-weight: 600; }
+.lift-up { color: var(--positive); }
+.lift-down { color: var(--negative); }
+.na { color: var(--text-secondary); font-style: italic; }
+.footer-note {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.footer-note strong { color: var(--text-primary); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>Full Activation vs. Partial Activation → Trial-to-Paid Conversion</h1>
+      <p id="headerSub">68 trials · Roofr funnel data, Oct–Dec 2025 cohort</p>
+    </div>
+    <div class="filter-group">
+      <label for="segmentFilter">Segment</label>
+      <select id="segmentFilter" onchange="render()">
+        <option value="All">All Segments</option>
+        <option value="SMB">SMB</option>
+        <option value="Mid-Market">Mid-Market</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="chart-card">
+    <h3>Trial → Paid conversion rate, by lead source</h3>
+    <div class="note">Full activation (3/3 steps) vs. partial (0–2 steps). "All Trials" is the overall baseline for the selected segment.</div>
+    <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+  </div>
+
+  <div class="table-card">
+    <table id="dataTable"></table>
+  </div>
+
+  <div class="footer-note" id="footerNote"></div>
+
+</div>
+
+<script>
+// Pre-aggregated data, sliced by segment ("All" = both combined)
+const DATA = {
+  "All": {
+    total_trials: 68,
+    total_conv: 26,
+    overall: { full: {n:15, conv:9, rate:60.0}, partial: {n:53, conv:17, rate:32.1} },
+    bySource: [
+      { source: "Organic Search",     full_n:5, full_conv:4, full_rate:80.0, partial_n:22, partial_conv:7, partial_rate:31.8 },
+      { source: "Referral",           full_n:2, full_conv:1, full_rate:50.0, partial_n:9,  partial_conv:1, partial_rate:11.1 },
+      { source: "Paid Search",        full_n:0, full_conv:0, full_rate:null, partial_n:10, partial_conv:4, partial_rate:40.0 },
+      { source: "Roofing Community",  full_n:2, full_conv:1, full_rate:50.0, partial_n:8,  partial_conv:5, partial_rate:62.5 },
+      { source: "Outbound",           full_n:5, full_conv:3, full_rate:60.0, partial_n:3,  partial_conv:0, partial_rate:0.0 },
+      { source: "Partner",            full_n:1, full_conv:0, full_rate:0.0,  partial_n:1,  partial_conv:0, partial_rate:0.0 }
+    ]
+  },
+  "SMB": {
+    total_trials: 58,
+    total_conv: 22,
+    overall: { full: {n:12, conv:8, rate:66.7}, partial: {n:46, conv:14, rate:30.4} },
+    bySource: [
+      { source: "Organic Search",     full_n:4, full_conv:3, full_rate:75.0,  partial_n:20, partial_conv:7, partial_rate:35.0 },
+      { source: "Referral",           full_n:2, full_conv:1, full_rate:50.0,  partial_n:9,  partial_conv:1, partial_rate:11.1 },
+      { source: "Paid Search",        full_n:0, full_conv:0, full_rate:null,  partial_n:6,  partial_conv:2, partial_rate:33.3 },
+      { source: "Roofing Community",  full_n:1, full_conv:1, full_rate:100.0, partial_n:7,  partial_conv:4, partial_rate:57.1 },
+      { source: "Outbound",           full_n:5, full_conv:3, full_rate:60.0,  partial_n:3,  partial_conv:0, partial_rate:0.0 },
+      { source: "Partner",            full_n:0, full_conv:0, full_rate:null,  partial_n:1,  partial_conv:0, partial_rate:0.0 }
+    ]
+  },
+  "Mid-Market": {
+    total_trials: 10,
+    total_conv: 4,
+    overall: { full: {n:3, conv:1, rate:33.3}, partial: {n:7, conv:3, rate:42.9} },
+    bySource: [
+      { source: "Organic Search",     full_n:1, full_conv:1, full_rate:100.0, partial_n:2, partial_conv:0, partial_rate:0.0 },
+      { source: "Referral",           full_n:0, full_conv:0, full_rate:null,  partial_n:0, partial_conv:0, partial_rate:null },
+      { source: "Paid Search",        full_n:0, full_conv:0, full_rate:null,  partial_n:4, partial_conv:2, partial_rate:50.0 },
+      { source: "Roofing Community",  full_n:1, full_conv:0, full_rate:0.0,   partial_n:1, partial_conv:1, partial_rate:100.0 },
+      { source: "Outbound",           full_n:0, full_conv:0, full_rate:null,  partial_n:0, partial_conv:0, partial_rate:null },
+      { source: "Partner",            full_n:1, full_conv:0, full_rate:0.0,   partial_n:0, partial_conv:0, partial_rate:null }
+    ]
+  }
+};
+
+function fmtPct(v) { return (v === null || v === undefined) ? null : v.toFixed(1) + '%'; }
+
+let chart = null;
+
+function render() {
+  const seg = document.getElementById('segmentFilter').value;
+  const d = DATA[seg];
+  // Only show sources that actually have at least one trial in this segment
+  const activeSources = d.bySource.filter(s => (s.full_n + s.partial_n) > 0);
+
+  document.getElementById('headerSub').textContent =
+    `${d.total_trials} trials${seg !== 'All' ? ' · ' + seg : ''} · Roofr funnel data, Oct–Dec 2025 cohort`;
+
+  renderKPIs(d);
+  renderChart(d, activeSources);
+  renderTable(d, activeSources, seg);
+  renderFooter(seg, activeSources);
+}
+
+function renderKPIs(d) {
+  const lift = (d.overall.partial.rate > 0) ? (d.overall.full.rate / d.overall.partial.rate) : null;
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Full activation (3/3 steps)</div>
+      <div class="kpi-value">${d.overall.full.rate.toFixed(1)}%</div>
+      <div class="kpi-sub">${d.overall.full.conv} of ${d.overall.full.n} trials converted</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Partial activation (&lt;3 steps)</div>
+      <div class="kpi-value">${d.overall.partial.rate.toFixed(1)}%</div>
+      <div class="kpi-sub">${d.overall.partial.conv} of ${d.overall.partial.n} trials converted</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Lift</div>
+      <div class="kpi-value" style="color:${lift >= 1 ? 'var(--positive)' : 'var(--negative)'}">${lift ? lift.toFixed(1)+'×' : '—'}</div>
+      <div class="kpi-sub">Full vs. partial conversion rate</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Trials analyzed</div>
+      <div class="kpi-value">${d.total_trials}</div>
+      <div class="kpi-sub">${d.total_conv} converted overall (${(d.total_conv/d.total_trials*100).toFixed(1)}%)</div>
+    </div>
+  `;
+}
+
+function renderChart(d, activeSources) {
+  const labels = ['All Trials', ...activeSources.map(s => s.source)];
+  const fullData = [d.overall.full.rate, ...activeSources.map(s => s.full_rate)];
+  const partialData = [d.overall.partial.rate, ...activeSources.map(s => s.partial_rate)];
+
+  const styles = getComputedStyle(document.documentElement);
+  const colorFull = styles.getPropertyValue('--color-full').trim();
+  const colorPartial = styles.getPropertyValue('--color-partial').trim();
+  const textColor = styles.getPropertyValue('--text-primary').trim();
+  const gridColor = styles.getPropertyValue('--border').trim();
+
+  if (chart) chart.destroy();
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Full activation (3/3)', data: fullData, backgroundColor: colorFull, borderRadius: 4 },
+        { label: 'Partial activation (<3)', data: partialData, backgroundColor: colorPartial, borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { color: textColor, usePointStyle: true, padding: 18 } },
+        tooltip: {
+          callbacks: {
+            label: function(c) {
+              const raw = c.raw;
+              return raw === null ? c.dataset.label + ': no trials' : c.dataset.label + ': ' + raw.toFixed(1) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: textColor }, grid: { display: false } },
+        y: { beginAtZero: true, max: 100, ticks: { color: textColor, callback: v => v + '%' }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+function renderTable(d, activeSources, seg) {
+  const rows = [{
+    source: 'All Trials',
+    full_n: d.overall.full.n, full_conv: d.overall.full.conv, full_rate: d.overall.full.rate,
+    partial_n: d.overall.partial.n, partial_conv: d.overall.partial.conv, partial_rate: d.overall.partial.rate,
+    isAll: true
+  }, ...activeSources];
+
+  let html = '<thead><tr>' +
+    ['Lead Source','Full n','Full Converted','Full Rate','Partial n','Partial Converted','Partial Rate','Lift']
+      .map(l => `<th>${l}</th>`).join('') + '</tr></thead><tbody>';
+
+  rows.forEach(r => {
+    const lift = (r.full_rate !== null && r.partial_rate !== null && r.partial_rate > 0)
+      ? (r.full_rate / r.partial_rate) : null;
+    let liftCell = '—';
+    if (lift !== null) {
+      const cls = lift >= 1 ? 'lift-up' : 'lift-down';
+      liftCell = `<span class="${cls}">${lift.toFixed(1)}×</span>`;
+    } else if (r.full_rate === null || r.partial_rate === null) {
+      liftCell = '<span class="na">n/a</span>';
+    }
+    html += `<tr class="${r.isAll ? 'all-row' : ''}">
+      <td>${r.source}</td>
+      <td>${r.full_n}</td>
+      <td>${r.full_conv}</td>
+      <td class="rate-pill">${r.full_rate === null ? '<span class="na">no trials</span>' : fmtPct(r.full_rate)}</td>
+      <td>${r.partial_n}</td>
+      <td>${r.partial_conv}</td>
+      <td class="rate-pill">${r.partial_rate === null ? '<span class="na">no trials</span>' : fmtPct(r.partial_rate)}</td>
+      <td>${liftCell}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('dataTable').innerHTML = html;
+}
+
+function renderFooter(seg, activeSources) {
+  let msg = '<strong>Read this carefully:</strong> ';
+  if (seg === 'All') {
+    msg += 'most per-source cells are small — Paid Search has <strong>zero</strong> fully-activated trials (unmeasured, not 0%), Referral and Roofing Community each have only 2 fully-activated trials, and Partner has 1. Organic Search (n=27) is the only source with enough volume to trust the direction shown. Roofing Community even runs the opposite way (partial beats full) on just 2 fully-activated trials — treat that as noise, not a real reversal.';
+  } else if (seg === 'SMB') {
+    msg += 'SMB carries most of the total volume (58 of 68 trials), so its numbers are the most reliable of the three views — though Organic Search (n=24) is still the only source here with real weight behind it. Everything else is single digits.';
+  } else {
+    msg += 'Mid-Market has only 10 trials total, spread across 4 sources — every single cell here is 0–4 trials. Referral and Outbound have zero Mid-Market trials at all in this cohort. Treat this view as a rough sketch of where to look next, not a finding to act on.';
+  }
+  document.getElementById('footerNote').innerHTML = msg;
+}
+
+render();
+
+// Chart.js draws to a canvas, so it doesn't auto-recolor when CSS variables
+// change — re-render once the shared toggle (in nav.js) flips the theme.
+document.addEventListener('roofr-theme-changed', render);
+</script>
+<script src="pages.js"></script>
+<script src="nav.js"></script>
+</body>
+</html>

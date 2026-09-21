@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTM Funnel Initiatives — Candidate Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F7F6; --panel: #FFFFFF; --fg: #14181A; --fg-muted: #57615F; --border: #DCE1DF;
+    --winner: #0E6F6B; --winner-bg: #E7F2F1; --winner-fg: #0E6F6B;
+    --subdetail: #8FC4BF; --subdetail-bg: #EEF6F5;
+    --notselected: #C3C9C7; --notselected-bg: #F1F2F1;
+    --flagged: #C98A3D; --flagged-bg: #FBF1E3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101413; --panel: #171C1B; --fg: #E7EEEC; --fg-muted: #9AA6A3; --border: #2A302E;
+      --winner: #55D6CB; --winner-bg: #16302D; --winner-fg: #55D6CB;
+      --subdetail: #4E8B85; --subdetail-bg: #182422;
+      --notselected: #565F5D; --notselected-bg: #1B1F1E;
+      --flagged: #E0A552; --flagged-bg: #2A2013;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101413; --panel: #171C1B; --fg: #E7EEEC; --fg-muted: #9AA6A3; --border: #2A302E;
+    --winner: #55D6CB; --winner-bg: #16302D; --winner-fg: #55D6CB;
+    --subdetail: #4E8B85; --subdetail-bg: #182422;
+    --notselected: #565F5D; --notselected-bg: #1B1F1E;
+    --flagged: #E0A552; --flagged-bg: #2A2013;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 44px 20px 90px; }
+  h1 {
+    font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 30px;
+    letter-spacing: -0.01em; margin: 0 0 8px;
+  }
+  .sub { color: var(--fg-muted); font-size: 14px; max-width: 70ch; margin: 0 0 28px; }
+  h2 {
+    font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 20px;
+    margin: 40px 0 16px;
+  }
+  .chart-card {
+    border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+    background: var(--panel); overflow-x: auto;
+  }
+  .chart-card svg { width: 100%; min-width: 700px; height: auto; }
+  .barval { font-family: 'IBM Plex Mono'; font-size: 13px; font-weight: 600; fill: var(--fg); }
+  .barlabel { font-family: 'IBM Plex Mono'; font-size: 11px; fill: var(--fg-muted); }
+
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 16px; font-size: 12.5px; color: var(--fg-muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--fg-muted); font-weight: 600; font-size: 12px; }
+  tr.winner td:first-child { border-left: 3px solid var(--winner); }
+  .badge {
+    display: inline-block; font-size: 10.5px; padding: 2px 8px; border-radius: 100px;
+    font-weight: 600;
+  }
+  .badge.winner { background: var(--winner-bg); color: var(--winner-fg); }
+  .badge.subdetail { background: var(--subdetail-bg); color: var(--subdetail); }
+  .badge.notselected { background: var(--notselected-bg); color: var(--fg-muted); }
+  .badge.flagged { background: var(--flagged-bg); color: var(--flagged); }
+
+  .card {
+    border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 14px;
+    background: var(--panel);
+  }
+  .card.winner { background: var(--winner-bg); border-color: var(--winner); }
+  .card.flagged { background: var(--flagged-bg); border-color: var(--flagged); }
+  .card h3 { margin: 0 0 4px; font-size: 15px; font-family: 'IBM Plex Mono'; font-weight: 600; }
+  .card .stats { font-size: 12px; color: var(--fg-muted); margin-bottom: 10px; }
+  .card p { margin: 0; font-size: 13.5px; line-height: 1.65; }
+  .card .stats b { color: var(--fg); }
+
+  footer { font-size: 12px; color: var(--fg-muted); margin-top: 36px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>GTM Funnel Initiatives — Candidate Review</h1>
+  <p class="sub">Every lever we tested this session, what it's worth, how long it'd take to prove, and why the three that made it beat the five that didn't.</p>
+
+  <div class="chart-card">
+    <svg viewBox="0 0 896 360" xmlns="http://www.w3.org/2000/svg">
+<line x1="35" y1="300" x2="876" y2="300" stroke="var(--border)" stroke-width="1"/>
+<rect x="50.0" y="209.6" width="78" height="90.4" rx="4" fill="var(--winner)"/><rect x="152.0" y="237.1" width="78" height="62.9" rx="4" fill="var(--winner)"/><rect x="254.0" y="269.7" width="78" height="30.3" rx="4" fill="var(--winner)"/><rect x="356.0" y="236.0" width="78" height="64.0" rx="4" fill="var(--subdetail)"/><rect x="458.0" y="259.3" width="78" height="40.7" rx="4" fill="var(--notselected)"/><rect x="560.0" y="282.0" width="78" height="18.0" rx="4" fill="var(--notselected)"/><rect x="662.0" y="30.0" width="78" height="270.0" rx="4" fill="var(--flagged)"/><rect x="764.0" y="67.9" width="78" height="232.1" rx="4" fill="var(--flagged)"/>
+<text x="89.0" y="201.6" text-anchor="middle" class="barval">$11,699</text><text x="191.0" y="229.1" text-anchor="middle" class="barval">$8,141</text><text x="293.0" y="261.7" text-anchor="middle" class="barval">$3,929</text><text x="395.0" y="228.0" text-anchor="middle" class="barval">$8,281</text><text x="497.0" y="251.3" text-anchor="middle" class="barval">$5,272</text><text x="599.0" y="274.0" text-anchor="middle" class="barval">$2,336</text><text x="701.0" y="22.0" text-anchor="middle" class="barval">$34,960</text><text x="803.0" y="59.9" text-anchor="middle" class="barval">$30,053</text>
+<text x="89.0" y="318.0" text-anchor="middle" class="barlabel">SMB activation</text><text x="89.0" y="331.0" text-anchor="middle" class="barlabel">(any meeting)</text><text x="191.0" y="318.0" text-anchor="middle" class="barlabel">Paid Search</text><text x="191.0" y="331.0" text-anchor="middle" class="barlabel">Lead→PQL</text><text x="293.0" y="318.0" text-anchor="middle" class="barlabel">Mid-Market</text><text x="293.0" y="331.0" text-anchor="middle" class="barlabel">PQL→Trial</text><text x="395.0" y="318.0" text-anchor="middle" class="barlabel">SMB activation</text><text x="395.0" y="331.0" text-anchor="middle" class="barlabel">(no meeting)</text><text x="497.0" y="318.0" text-anchor="middle" class="barlabel">Mid-Market</text><text x="497.0" y="331.0" text-anchor="middle" class="barlabel">meeting vs no</text><text x="599.0" y="318.0" text-anchor="middle" class="barlabel">Referral</text><text x="599.0" y="331.0" text-anchor="middle" class="barlabel">Trial→Paid</text><text x="701.0" y="318.0" text-anchor="middle" class="barlabel">Roofing Comm.</text><text x="701.0" y="331.0" text-anchor="middle" class="barlabel">Trial→Paid</text><text x="803.0" y="318.0" text-anchor="middle" class="barlabel">Roofing Comm.</text><text x="803.0" y="331.0" text-anchor="middle" class="barlabel">Lead→PQL</text>
+</svg>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--winner)"></span>Selected initiative</span>
+      <span><span class="swatch" style="background:var(--subdetail)"></span>Folded into a selected initiative</span>
+      <span><span class="swatch" style="background:var(--notselected)"></span>Considered, not selected</span>
+      <span><span class="swatch" style="background:var(--flagged)"></span>Flagged — no mechanism yet</span>
+    </div>
+  </div>
+
+  <h2>Full comparison table</h2>
+  <table>
+    <thead><tr><th>Lever</th><th>Status</th><th>Pool/qtr</th><th>Gap</th><th>p-value</th><th>$/qtr (half-gap)</th><th>Quarters to prove</th></tr></thead>
+    <tbody>
+      <tr class="winner"><td>SMB activation (any meeting)</td><td><span class="badge winner">Selected</span></td><td>29</td><td>37.3pp</td><td>0.047</td><td>$11,699</td><td>8</td></tr>
+      <tr class="winner"><td>Paid Search, Lead→PQL</td><td><span class="badge winner">Selected</span></td><td>67</td><td>20.6pp</td><td>0.0026</td><td>$8,141</td><td>5</td></tr>
+      <tr class="winner"><td>Mid-Market, PQL→Trial</td><td><span class="badge winner">Selected</span></td><td>18</td><td>20.7pp</td><td>0.077</td><td>$3,929</td><td>20</td></tr>
+      <tr><td>SMB activation (no meeting only)</td><td><span class="badge subdetail">Sub-detail</span></td><td>14</td><td>57.1pp</td><td>0.031</td><td>$8,281</td><td>7</td></tr>
+      <tr><td>Mid-Market, meeting vs no meeting</td><td><span class="badge notselected">Not selected</span></td><td>10</td><td>40.0pp</td><td>0.197</td><td>$5,272</td><td>17</td></tr>
+      <tr><td>Referral, Trial→Paid</td><td><span class="badge notselected">Not selected</span></td><td>11</td><td>23.9pp</td><td>0.135</td><td>$2,336</td><td>19</td></tr>
+      <tr><td>Roofing Community, Trial→Paid</td><td><span class="badge flagged">Flagged</span></td><td>10</td><td>25.5pp</td><td>0.125</td><td>$34,960</td><td>24</td></tr>
+      <tr><td>Roofing Community, Lead→PQL</td><td><span class="badge flagged">Flagged</span></td><td>31</td><td>13.9pp</td><td>0.131</td><td>$30,053</td><td>25</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--fg-muted); margin-top:8px;">Gap and p-value are measured against the rest of that population at the same funnel stage. Dollar figures assume closing <i>half</i> the observed gap (a conservative discount for small-sample inflation). Quarters assume similar volume repeats and use each lever's own eligible population as the tracked arm.</p>
+
+  <h2>Why these three made it</h2>
+
+  <div class="card winner">
+    <h3>SMB activation (any meeting)</h3>
+    <div class="stats">Pool <b>29</b>/qtr · Gap <b>37.3pp</b> · p = <b>0.047</b> · <b>$11,699</b>/qtr · <b>8</b> quarters to prove</div>
+    <p>The only candidate that clears all three tests at once: it pays for itself easily, it's big enough to justify building a real program around, and it's provable within a normal two-year planning horizon. This is where the deck can show full mechanism, process, tooling, and automation depth, because the evidence actually supports building something real. The sharper "no meeting only" slice (57pp gap, p=0.031, provable even faster) is folded in as a detail to watch inside this initiative, not treated as a separate fourth pick, since it's the same underlying population narrowed further.</p>
+  </div>
+
+  <div class="card winner">
+    <h3>Paid Search, Lead→PQL</h3>
+    <div class="stats">Pool <b>67</b>/qtr · Gap <b>20.6pp</b> · p = <b>0.0026</b> · <b>$8,141</b>/qtr · <b>5</b> quarters to prove</div>
+    <p>The single strongest statistical case in the whole dataset — already essentially proven with existing data, not just promising — and the biggest volume lever by far. The catch: nobody can define exactly what "PQL" means operationally today. Rather than build automation on an undefined rule, the plan is a cheap, low-risk test plus an explicit, evidence-backed ask to fix the PQL definition itself — protecting the funnel's single biggest leak without overbuilding on a shaky foundation.</p>
+  </div>
+
+  <div class="card winner">
+    <h3>Mid-Market, PQL→Trial</h3>
+    <div class="stats">Pool <b>18</b>/qtr · Gap <b>20.7pp</b> · p = <b>0.077</b> · <b>$3,929</b>/qtr · <b>20</b> quarters to fully prove</div>
+    <p>Not yet statistically proven, but the closest of any long-shot candidate to clearing significance, and the only one of the remaining options with a fully worked-out mechanism (an ownership/handoff/SLA gap, already diagnosed via a stalled-vs-progressed cohort comparison). Chosen over Referral — a similar-strength long-shot — because it fills a funnel stage none of the other two initiatives touch, giving the full three-initiative set top-to-bottom coverage: Lead→PQL, PQL→Trial, Trial→Paid.</p>
+  </div>
+
+  <h2>Considered, not selected</h2>
+
+  <div class="card">
+    <h3>Mid-Market, meeting vs no meeting</h3>
+    <div class="stats">Pool <b>10</b>/qtr · Gap <b>40.0pp</b> · p = <b>0.197</b> · <b>$5,272</b>/qtr · <b>17</b> quarters</div>
+    <p>The weakest current evidence of everything tested this session — p=0.197 means this could easily just be noise, on a sample of only 5 vs. 5. Once Mid-Market PQL→Trial turned out to be a stronger, better-evidenced way to represent that segment, this became redundant with it. Flagged to monitor, not promoted.</p>
+  </div>
+
+  <div class="card">
+    <h3>Referral, Trial→Paid</h3>
+    <div class="stats">Pool <b>11</b>/qtr · Gap <b>23.9pp</b> · p = <b>0.135</b> · <b>$2,336</b>/qtr · <b>19</b> quarters</div>
+    <p>A perfectly reasonable hypothesis with a real mechanism (a post-trial onboarding gap), but weaker evidence than Mid-Market PQL→Trial and roughly half the dollar impact. It would have also duplicated the Trial→Paid stage already covered by SMB activation, leaving PQL→Trial as the only major stage without a champion — Mid-Market closes that gap instead.</p>
+  </div>
+
+  <div class="card flagged">
+    <h3>Roofing Community — Trial→Paid & Lead→PQL</h3>
+    <div class="stats">Pool <b>10</b> &amp; <b>31</b>/qtr · Gaps <b>25.5pp</b> &amp; <b>13.9pp</b> · p = <b>0.125</b> &amp; <b>0.131</b> · <b>$34,960</b> &amp; <b>$30,053</b>/qtr — the largest raw dollar potential of anything found</div>
+    <p>The biggest opportunity in the entire dataset by dollar impact — and the one thing that disqualifies it anyway: no identifiable mechanism. Checked against every behavioral variable available (activation, sales-assist, engagement, company size), and none of them explain why this channel converts so much better — if anything, it looks slightly less engaged on paper. That's not a problem more data would fix; it's a missing-diagnosis problem. Flagged for a qualitative follow-up (talk to a few customers, review the partner program terms) rather than proposed as a pilot.</p>
+  </div>
+
+  <footer>Based on this quarter's 260-lead export. "Half the observed gap" and "quarters to prove" use the same conservative method across every row so the comparisons are apples-to-apples.</footer>
+</div>
+<script src="pages.js"></script>
+<script src="nav.js"></script>
+</body>
+</html>

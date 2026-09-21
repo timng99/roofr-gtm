@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roofr GTM Diagnostic — Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F6F7F6;
+    --bg-raised: #FFFFFF;
+    --border: #DCE1DF;
+    --text: #14181A;
+    --text-dim: #57615F;
+    --accent: #0E6F6B;
+    --accent-warm: #A6580C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]){
+      --bg: #101413;
+      --bg-raised: #171c1b;
+      --border: #2a302e;
+      --text: #e7eeec;
+      --text-dim: #9aa6a3;
+      --accent: #55d6cb;
+      --accent-warm: #e0a552;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #101413;
+    --bg-raised: #171c1b;
+    --border: #2a302e;
+    --text: #e7eeec;
+    --text-dim: #9aa6a3;
+    --accent: #55d6cb;
+    --accent-warm: #e0a552;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 96px 24px 64px;
+  }
+  h1{
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(2.1rem, 4vw, 2.75rem);
+    line-height: 1.15;
+    margin: 0 0 14px;
+    color: var(--text);
+    max-width: 14ch;
+  }
+  .sub{
+    color: var(--text-dim);
+    font-size: 1.02rem;
+    margin: 0 0 40px;
+    max-width: 58ch;
+  }
+  .intro{
+    color: var(--text);
+    font-size: 1rem;
+    max-width: 58ch;
+    margin: 0 0 48px;
+  }
+  .intro strong{ color: var(--text); font-weight: 500; }
+  .divider{
+    height: 1px;
+    background: var(--border);
+    margin: 0 0 40px;
+  }
+  .list{ list-style: none; margin: 0; padding: 0; }
+  .item{
+    border-top: 1px solid var(--border);
+    padding: 26px 0;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    padding-left: 18px;
+    transition: padding-left .15s ease;
+  }
+  .item::before{
+    content: "";
+    position: absolute;
+    left: 0; top: 30px;
+    width: 3px; height: 0;
+    background: var(--accent);
+    transition: height .18s ease;
+  }
+  .item:hover{ padding-left: 24px; }
+  .item:hover::before{ height: calc(100% - 40px); }
+  .item:last-child{ border-bottom: 1px solid var(--border); }
+  .item-title{
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin: 0 0 6px;
+  }
+  .item:hover .item-title{ color: var(--accent); }
+  .item-desc{
+    color: var(--text-dim);
+    font-size: 0.94rem;
+    max-width: 52ch;
+    margin: 0;
+  }
+  .item.placeholder{
+    border-top-style: dashed;
+    opacity: 0.7;
+  }
+  .item.placeholder .item-title{ color: var(--text-dim); }
+  .item.placeholder:hover{ padding-left: 18px; }
+  .item.placeholder:hover::before{ height: 0; }
+  code{
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.88em;
+    color: var(--accent-warm);
+  }
+  footer{
+    margin-top: 56px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+  a.plain{ color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(85,214,203,0.35); }
+  a.plain:hover{ border-bottom-color: var(--accent); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Roofr GTM Diagnostic</h1>
+    <p class="sub">Where the funnel breaks down, and what to do about it.</p>
+
+    <p class="intro">A quarter of lead data across acquisition, activation, sales assist, and monetization — split into <strong>two tracks worth reading in order</strong>: the diagnosis, then the plan.</p>
+
+    <div class="divider"></div>
+
+    <ul class="list" id="page-list"></ul>
+
+    <footer>
+      Add a page by editing <code>pages.js</code> — every page on this site reads from that one file.
+    </footer>
+  </div>
+
+<script src="pages.js"></script>
+<script>
+  // Reads from pages.js — add new pages there, not here.
+  const pages = window.SITE_PAGES || [];
+
+  const list = document.getElementById('page-list');
+  pages.forEach(p => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.className = 'item';
+    a.href = p.href;
+    a.innerHTML = `<p class="item-title">${p.title}</p><p class="item-desc">${p.desc}</p>`;
+    li.appendChild(a);
+    list.appendChild(li);
+  });
+
+  // Placeholder row shown only while the manifest has fewer than 3 entries.
+  if (pages.length < 3) {
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="item placeholder"><p class="item-title">Add your third page</p><p class="item-desc">Drop the file next to this one, then add its title, description, and filename to the <code>pages</code> array above.</p></div>`;
+    list.appendChild(li);
+  }
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
